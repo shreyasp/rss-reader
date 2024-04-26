@@ -5,6 +5,8 @@ ENV PYTHONUNBUFFERED True
 ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
+RUN apt update
+RUN apt install -y git
 
 RUN pip install --no-cache-dir -r requirements.txt
 
