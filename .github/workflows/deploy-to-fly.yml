@@ -1,9 +1,11 @@
 name: Deploy to Fly.io
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Run tests"]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   deploy:
