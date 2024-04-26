@@ -1,0 +1,14 @@
+app:
+  debug: true
+
+db:
+  host: "localhost"
+  port: 5432
+  user: "rss-reader-dev"
+  pswd: "rss-reader-dev"
+
+cache:
+  host: localhost
+  port: 6379
+  dbno: 0
+  pswd: ""
