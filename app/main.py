@@ -25,13 +25,13 @@ def version():
     amd = AppMetadata()
     return {
         "app_version": amd.app_version,
-        "fast_api_version": fastapi_version,
+        "fastapi_version": amd.fastapi_version,
         "api_version": app.version
     }
 
 class AppMetadata:
     app_version = ""
-    fast_api_version = ""
+    fastapi_version = ""
 
     def __init__(self):
         self._get_git_head_commit()
@@ -40,3 +40,6 @@ class AppMetadata:
         repo = git.Repo(search_parent_directories=True)
         head_commit = repo.commit("main")
         self.app_version = head_commit.hexsha
+
+    def _get_fastapi_version(self):
+        self.fastapi_version = fastapi_version
