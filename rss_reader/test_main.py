@@ -3,7 +3,7 @@ import json
 
 # internal imports
 from fastapi.testclient import TestClient
-from main import app
+from .main import app
 from .api.v1.app_data import AppMetadata
 
 client = TestClient(app)
