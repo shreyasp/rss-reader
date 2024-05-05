@@ -4,7 +4,7 @@ import json
 # internal imports
 from fastapi.testclient import TestClient
 from app.main import app
-from .routers.app_data import AppMetadata
+from .models.app_data import AppMetadata
 
 client = TestClient(app)
 

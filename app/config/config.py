@@ -1,4 +1,5 @@
 # builtin imports
+import os
 from os import path
 
 # external imports
@@ -32,11 +33,24 @@ class CacheConfig(metaclass=Singleton):
     dbno: int
     pswd: str
 
-    def __init__(self, config: any) -> None:
+    def __init__(self, config: any, mode: str) -> None:
         self.host = config["host"] or "localhost"
         self.port = config["port"] or 6379
         self.dbno = config["dbno"]
         self.pswd = config["pswd"]
+
+        # to ensure we don't leak the secrets in the public
+        # these secrets will be set in fly.io dashboard
+        if (
+            mode == "prod" and 
+            os.getenv("REDIS_URL") != "" and
+            os.getenv("REDIS_PASSWORD") != "" and
+            os.getenv("REDIS_PORT") != ""
+
+        ):
+            self.host = os.getenv("REDIS_URL")
+            self.pswd = os.getenv("REDIS_PASSWORD")
+            self.port = int(os.getenv("REDIS_PORT"))
 
 
 class Config(metaclass=Singleton):
@@ -62,7 +76,7 @@ class Config(metaclass=Singleton):
             self.db_config = DBConfig(config["db"])
             
             # init cache config
-            self.cache_config = CacheConfig(config["cache"])
+            self.cache_config = CacheConfig(config["cache"], mode)
 
 
 

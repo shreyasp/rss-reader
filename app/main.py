@@ -11,8 +11,8 @@ from .utils.cache import Cache
 from .utils.message_queue import MessageQueue
 
 # import all routers here
-from .routers.app_data import root_router
-from .routers.users import users_router
+from .models.app_data import root_router
+from .models.users import users_router
 
 
 class RSSReaderApplication:
@@ -32,8 +32,8 @@ class RSSReaderApplication:
     
         self._setup_middleware()
         self._setup_routers()
-        # self._setup_application()
-        # self._setup_message_queue()
+        self._setup_application()
+        self._setup_message_queue()
 
     def _setup_middleware(self):
         origins = ["*"]
