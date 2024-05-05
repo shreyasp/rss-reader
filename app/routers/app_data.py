@@ -3,10 +3,10 @@ from fastapi import APIRouter, status
 from fastapi import __version__ as fastapi_version
 
 # builtin imports
-import git, os
+import git 
+import os 
 
-
-# data model to represent the application level metadata  such as
+# data model to represent the application level metadata such as
 # app_name, app_version, framework_version, etc.
 class AppMetadata:
     app_version = ""
@@ -48,8 +48,10 @@ def ping():
 )
 def version():
     amd = AppMetadata()
-    return {
+    version_data = {
         "app_version": amd.app_version,
         "fastapi_version": amd.fastapi_version,
     }
+
+    return version_data
 

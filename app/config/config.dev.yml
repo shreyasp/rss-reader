@@ -3,7 +3,7 @@ app:
 
 db:
   host: "localhost"
-  port: 5432
+  port: 5433
   user: "rss-reader-dev"
   pswd: "rss-reader-dev"
 

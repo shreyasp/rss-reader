@@ -1,4 +1,3 @@
-# https://hub.docker.com/_/python
 FROM python:3.10-slim-bullseye
 
 ENV PYTHONUNBUFFERED True
@@ -10,4 +9,5 @@ RUN apt install -y git
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["APP_MODE=prod", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV APP_MODE prod
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,6 +1,7 @@
 # builtin imports
 import os
 import signal
+import json
 
 # external imports
 from redis import Redis
@@ -43,11 +44,12 @@ class Cache(metaclass=Singleton):
         if val is None:
             return ""
         
-        return val
+        return json.loads(val)
 
-    def set(self, key:str, val:any, ttl:int) -> bool:
-        return self._redis.set(
-            name=key,
-            value=val,
-            ex=ttl
-        )
+    def set(self, key:str, val:any, ttl:int=0) -> bool:
+        val_str = json.dumps(val)
+        
+        if not ttl:
+            return self._redis.set(name=key, value=val_str)
+
+        return self._redis.set(name=key, value=val_str, ex=ttl)

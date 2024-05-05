@@ -1,5 +1,5 @@
 # external imports
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 # builtin imports

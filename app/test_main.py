@@ -19,7 +19,7 @@ def test_app_metadata():
     resp = client.get("/version")
     assert resp.status_code == 200
     resp_json = json.loads(resp.text)
-
+    
     amd = AppMetadata()
 
     assert resp_json["app_version"] == amd.app_version
