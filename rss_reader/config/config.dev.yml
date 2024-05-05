@@ -3,9 +3,10 @@ app:
 
 db:
   host: "localhost"
-  port: 5433
-  user: "rss-reader-dev"
-  pswd: "rss-reader-dev"
+  name: "rss_reader"
+  port: 5432
+  user: "rss_reader"
+  pswd: "rss_Reader_Dev"
 
 cache:  
   host: "localhost"

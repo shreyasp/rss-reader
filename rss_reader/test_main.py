@@ -3,8 +3,8 @@ import json
 
 # internal imports
 from fastapi.testclient import TestClient
-from app.main import app
-from .routers.app_data import AppMetadata
+from main import app
+from .api.v1.app_data import AppMetadata
 
 client = TestClient(app)
 

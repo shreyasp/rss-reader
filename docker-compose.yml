@@ -27,7 +27,7 @@ services:
     environment:
       - POSTGRES_USER=rss_reader
       - POSTGRES_PASSWORD=rss_reader_dev
-      - POSTGRES_DB=rss_reader-db
+      - POSTGRES_DB=rss_reader
     ports:
       - "5433:5432"
     user: postgres

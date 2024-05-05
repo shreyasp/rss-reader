@@ -4,21 +4,24 @@ import os
 # external imports
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from h11 import Data
 
 # internal imports except routers
 from .config.config import Config
 from .utils.cache import Cache
 from .utils.message_queue import MessageQueue
+from .utils.database import Database
 
 # import all routers here
-from .routers.app_data import root_router
-from .routers.users import users_router
+from .api.v1.app_data import root_router
+from .api.v1.users import users_router
 
 
 class RSSReaderApplication:
     _mode: str
     _fastapi_app: FastAPI
     _config: Config
+    _database: Database
     _cache: Cache
     _queue: MessageQueue
 
@@ -32,8 +35,8 @@ class RSSReaderApplication:
     
         self._setup_middleware()
         self._setup_routers()
-        # self._setup_application()
-        # self._setup_message_queue()
+        self._setup_application()
+        self._setup_message_queue()
 
     def _setup_middleware(self):
         origins = ["*"]
@@ -56,6 +59,9 @@ class RSSReaderApplication:
     def _setup_application(self):
         self._cache = Cache()
         self._cache.setup(self._config.cache_config)
+
+        self._database = Database(self._config.db_config)
+        self._database.setup()
 
 
     def _setup_message_queue(self):

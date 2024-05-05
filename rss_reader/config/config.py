@@ -1,4 +1,5 @@
 # builtin imports
+import os
 from os import path
 
 # external imports
@@ -19,12 +20,14 @@ class DBConfig(metaclass=Singleton):
     port: int
     user: str
     pswd: str
+    name: str
     
     def __init__(self, config: any) -> None:
         self.host = config["host"]
         self.port = config["port"]
         self.user = config["user"]
         self.pswd = config["pswd"]
+        self.name = config["name"]
 
 class CacheConfig(metaclass=Singleton):
     host: str
@@ -32,11 +35,24 @@ class CacheConfig(metaclass=Singleton):
     dbno: int
     pswd: str
 
-    def __init__(self, config: any) -> None:
+    def __init__(self, config: any, mode: str) -> None:
         self.host = config["host"] or "localhost"
         self.port = config["port"] or 6379
         self.dbno = config["dbno"]
         self.pswd = config["pswd"]
+
+        # to ensure we don't leak the secrets in the public
+        # these secrets will be set in fly.io dashboard
+        if (
+            mode == "prod" and 
+            os.getenv("REDIS_URL") != "" and
+            os.getenv("REDIS_PASSWORD") != "" and
+            os.getenv("REDIS_PORT") != ""
+
+        ):
+            self.host = os.getenv("REDIS_URL")
+            self.pswd = os.getenv("REDIS_PASSWORD")
+            self.port = int(os.getenv("REDIS_PORT"))
 
 
 class Config(metaclass=Singleton):
@@ -46,11 +62,11 @@ class Config(metaclass=Singleton):
 
     def __init__(self, mode:str) -> None:    
         # path to config file
-        config_file_path = path.abspath(path.join("app", "config", "config.dev.yml"))
+        config_file_path = path.abspath(path.join("rss_reader", "config", "config.dev.yml"))
         if mode == "prod":
-            config_file_path = path.abspath(path.join("app", "config", "config.prod.yml"))
+            config_file_path = path.abspath(path.join("rss_reader", "config", "config.prod.yml"))
         elif mode == "test":
-            config_file_path = path.abspath(path.join("app", "config", "config.test.yml"))
+            config_file_path = path.abspath(path.join("rss_reader", "config", "config.test.yml"))
 
         with open(config_file_path, "r") as config_file:
             config = yaml.safe_load(config_file)
@@ -62,7 +78,7 @@ class Config(metaclass=Singleton):
             self.db_config = DBConfig(config["db"])
             
             # init cache config
-            self.cache_config = CacheConfig(config["cache"])
+            self.cache_config = CacheConfig(config["cache"], mode)
 
 
 
