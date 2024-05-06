@@ -6,7 +6,7 @@ db:
   name: "rss_reader"
   port: 5432
   user: "rss_reader"
-  pswd: "rss_Reader_Dev"
+  pswd: ""
 
 cache:  
   host: "localhost"

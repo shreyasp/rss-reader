@@ -1,54 +1,40 @@
-import datetime
+import uuid
+from datetime import datetime
 
-from pydantic import EmailStr
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, mapped_column
-
-Base = declarative_base()
-
-class User(Base):
-    """Defines DB model for users"""
-
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    uuid = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    updated_at = Column(DateTime, default=datetime.datetime.now())
-    feeds = relationship("Feed", back_populates="user")
-
-class Feed(Base):
-    """Defines DB model for a single rss feeds linked with a user"""
-
-    __tablename__ = "feeds"
-
-    id = Column(Integer, primary_key=True, index=True)
-    uuid = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    has_sync_failed = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.now())
-    updated_at = Column(DateTime, default=datetime.datetime.now())
-    last_successful_sync = Column(DateTime, default=datetime.datetime.now())
-
-    user_id = mapped_column(ForeignKey("users.id"))
-    user = relationship("User", back_populates="feeds")
-
-    feed_items = relationship("FeedItem", back_populates="feed")
+from sqlmodel import Field, Relationship, SQLModel
 
 
-class FeedItem(Base):
-    """Defines DB model for a single feed item linked with a feed"""
+class Users(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    uuid: str = Field(default=str(uuid.uuid4()), max_length=36)
+    email: str = Field(max_length=320)
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default=datetime.now())
+
+    feeds: list["Feeds"] = Relationship(back_populates="user")
 
 
-    __tablename__ = "feed_items"
+class Feeds(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    uuid: str = Field(default=str(uuid.uuid4()), max_length=36)
+    is_active: bool = Field(default=True)
+    has_sync_failed: bool = Field(default=False)
+    created_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default=datetime.now())
+    last_successful_sync: datetime = Field(default=None)
 
-    id = Column(Integer, primary_key=True, index=True)
-    uuid = Column(String, nullable=False)
-    is_read = Column(Boolean, default=True)
-    read_at = Column(DateTime, default=datetime.datetime.now())
+    user_id: int | None = Field(default=None, foreign_key="users.id")
+    user: Users | None = Relationship(back_populates="feeds")
 
-    feed_id = mapped_column(ForeignKey("feeds.id"))
-    feed = relationship("Feed", back_populates="feed_items")
+    feed_items: list["FeedItems"] = Relationship(back_populates="feed")
+
+
+class FeedItems(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    uuid: str = Field(default=str(uuid.uuid4()), max_length=36)
+    is_read: bool = Field(default=False)
+    read_at: datetime = Field(default=None)
+
+    feed_id: int | None = Field(default=None, foreign_key="feeds.id")
+    feed: Feeds | None = Relationship(back_populates="feed_items")
