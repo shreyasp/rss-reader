@@ -10,8 +10,8 @@ import os
 import sys
 from dotenv import load_dotenv
 
-from rss_reader.database.models import Users
-from rss_reader.database.models import Feeds
+from rss_reader.database.models import Users  # unused-import
+from rss_reader.database.models import Feeds  # unused-import
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".venv"))
@@ -26,7 +26,7 @@ DATABASE_URL = "postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}".form
     password="rss_Reader_Dev",
     host="localhost",
     port="5432",
-    db="rss_reader"
+    db="rss_reader",
 )
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
@@ -34,7 +34,6 @@ config.set_main_option("sqlalchemy.url", DATABASE_URL)
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
 
 
 # add your model's MetaData object here
@@ -87,9 +86,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

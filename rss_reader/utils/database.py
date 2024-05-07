@@ -1,5 +1,5 @@
 # external imports
-from sqlalchemy.engine import URL
+from sqlalchemy.engine import URL, Engine
 from sqlmodel import create_engine, Session
 
 # internal imports
@@ -7,8 +7,19 @@ from ..config.config import DBConfig
 from .singleton import Singleton
 
 
+def get_db_connection():
+    engine = Database().get_engine()
+
+    db = Session(engine)
+    try:
+        yield db
+
+    finally:
+        db.close()
+
+
 class Database(metaclass=Singleton):
-    db: Session
+    engine: Engine
 
     _db_name: str
     _host: str
@@ -31,7 +42,7 @@ class Database(metaclass=Singleton):
         pg_conn_str = self.create_pg_connection_string()
 
         engine = create_engine(pg_conn_str, echo=True)
-        self.db = Session(engine)
+        self.engine = engine
 
     def create_pg_connection_string(self) -> str:
         url = URL.create(
@@ -45,5 +56,5 @@ class Database(metaclass=Singleton):
 
         return url
 
-    def get_db_connection(self):
-        return self.db
+    def get_engine(self):
+        return self.engine

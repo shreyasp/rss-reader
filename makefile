@@ -1,4 +1,4 @@
-test:
+run-test:
 	APP_MODE=test pytest -v --junitxml=junit/test-results.xml --cov-report=html
 
 run-dev:

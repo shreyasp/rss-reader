@@ -4,7 +4,6 @@ import os
 # external imports
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from h11 import Data
 
 # internal imports except routers
 from .config.config import Config
