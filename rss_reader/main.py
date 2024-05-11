@@ -5,6 +5,8 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
+from rss_reader.utils.feed_parser import Parser
+
 # internal imports except routers
 from .config.config import Config
 from .utils.cache import Cache
@@ -14,6 +16,7 @@ from .utils.database import Database
 # import all routers here
 from .api.v1.app_data import root_router
 from .api.v1.users import users_router
+from .api.v1.feeds import feeds_router
 
 
 class RSSReaderApplication:
@@ -36,6 +39,7 @@ class RSSReaderApplication:
         self._setup_routers()
         self._setup_application()
         self._setup_message_queue()
+        self._setup_feed_parser()
 
     def _setup_middleware(self):
         origins = ["*"]
@@ -50,6 +54,7 @@ class RSSReaderApplication:
     def _setup_routers(self):
         self._fastapi_app.include_router(root_router)
         self._fastapi_app.include_router(users_router)
+        self._fastapi_app.include_router(feeds_router)
 
     def _get_config(self):
         self._config = Config(self._mode)
@@ -64,6 +69,10 @@ class RSSReaderApplication:
     def _setup_message_queue(self):
         self._queue = MessageQueue()
         self._queue.setup()
+
+    def _setup_feed_parser(self):
+        p: Parser = Parser()
+        p.setup()
 
 
 # initialize fastapi

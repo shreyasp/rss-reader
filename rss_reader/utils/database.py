@@ -1,4 +1,5 @@
 # external imports
+from typing import Any
 from sqlalchemy.engine import URL, Engine
 from sqlmodel import create_engine, Session
 
@@ -8,7 +9,8 @@ from .singleton import Singleton
 
 
 def get_db_connection():
-    engine = Database().get_engine()
+    d: Database = Database()
+    engine = d.get_engine()
 
     db = Session(engine)
     try:
@@ -19,7 +21,7 @@ def get_db_connection():
 
 
 class Database(metaclass=Singleton):
-    engine: Engine
+    _engine: Engine
 
     _db_name: str
     _host: str
@@ -42,7 +44,7 @@ class Database(metaclass=Singleton):
         pg_conn_str = self.create_pg_connection_string()
 
         engine = create_engine(pg_conn_str, echo=True)
-        self.engine = engine
+        self._engine = engine
 
     def create_pg_connection_string(self) -> str:
         url = URL.create(
@@ -56,5 +58,5 @@ class Database(metaclass=Singleton):
 
         return url
 
-    def get_engine(self):
-        return self.engine
+    def get_engine(self) -> Engine:
+        return self._engine
