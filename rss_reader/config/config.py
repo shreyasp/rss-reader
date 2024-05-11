@@ -8,10 +8,11 @@ import yaml
 # internal imports
 from ..utils.singleton import Singleton
 
+
 class AppConfig(metaclass=Singleton):
     debug: bool
 
-    def __init__(self, config:any) -> None:
+    def __init__(self, config: any) -> None:
         self.debug = config["debug"]
 
 
@@ -21,13 +22,14 @@ class DBConfig(metaclass=Singleton):
     user: str
     pswd: str
     name: str
-    
+
     def __init__(self, config: any) -> None:
         self.host = config["host"]
         self.port = config["port"]
         self.user = config["user"]
         self.pswd = config["pswd"]
         self.name = config["name"]
+
 
 class CacheConfig(metaclass=Singleton):
     host: str
@@ -44,11 +46,10 @@ class CacheConfig(metaclass=Singleton):
         # to ensure we don't leak the secrets in the public
         # these secrets will be set in fly.io dashboard
         if (
-            mode == "prod" and 
-            os.getenv("REDIS_URL") != "" and
-            os.getenv("REDIS_PASSWORD") != "" and
-            os.getenv("REDIS_PORT") != ""
-
+            mode == "prod"
+            and os.getenv("REDIS_URL") != ""
+            and os.getenv("REDIS_PASSWORD") != ""
+            and os.getenv("REDIS_PORT") != ""
         ):
             self.host = os.getenv("REDIS_URL")
             self.pswd = os.getenv("REDIS_PASSWORD")
@@ -60,25 +61,28 @@ class Config(metaclass=Singleton):
     db_config: DBConfig
     cache_config: CacheConfig
 
-    def __init__(self, mode:str) -> None:    
+    def __init__(self, mode: str = "dev") -> None:
         # path to config file
-        config_file_path = path.abspath(path.join("rss_reader", "config", "config.dev.yml"))
+        config_file_path = path.abspath(
+            path.join("rss_reader", "config", "config.dev.yml")
+        )
         if mode == "prod":
-            config_file_path = path.abspath(path.join("rss_reader", "config", "config.prod.yml"))
+            config_file_path = path.abspath(
+                path.join("rss_reader", "config", "config.prod.yml")
+            )
         elif mode == "test":
-            config_file_path = path.abspath(path.join("rss_reader", "config", "config.test.yml"))
+            config_file_path = path.abspath(
+                path.join("rss_reader", "config", "config.test.yml")
+            )
 
         with open(config_file_path, "r") as config_file:
             config = yaml.safe_load(config_file)
-            
+
             # init application config
             self.app_config = AppConfig(config["app"])
 
             # init database config
             self.db_config = DBConfig(config["db"])
-            
+
             # init cache config
             self.cache_config = CacheConfig(config["cache"], mode)
-
-
-

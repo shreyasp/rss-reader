@@ -67,9 +67,10 @@ def create_user(
         )
     else:
         conn.commit()
-
-        # refersh the object to be in sync with database
         conn.refresh(user)
+
+    finally:
+        conn.close()
 
     return user
 
