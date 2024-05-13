@@ -39,7 +39,7 @@ class Cache(metaclass=Singleton):
             print("failed to connect to redis {}:{}".format(config.host, config.port))
             os.kill(os.getpid(), signal.SIGKILL)
 
-    def get_redis_connection(self):
+    def get_redis_connection(self) -> Redis:
         return self._redis
 
     def get(self, key: str) -> any:
