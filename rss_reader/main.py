@@ -26,6 +26,7 @@ class RSSReaderApplication:
     _database: Database
     _cache: Cache
     _queue: MessageQueue
+    _parser: Parser
 
     def __init__(self, web_app: FastAPI, app_mode: str):
         self._fastapi_app = web_app
@@ -40,6 +41,9 @@ class RSSReaderApplication:
         self._setup_application()
         self._setup_message_queue()
         self._setup_feed_parser()
+
+        # requeue all jobs
+        self._parser.requeue_jobs()
 
     def _setup_middleware(self):
         origins = ["*"]
@@ -71,8 +75,8 @@ class RSSReaderApplication:
         self._queue.setup()
 
     def _setup_feed_parser(self):
-        p: Parser = Parser()
-        p.setup()
+        self._parser = Parser()
+        self._parser.setup()
 
 
 # initialize fastapi
