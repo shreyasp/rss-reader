@@ -63,9 +63,7 @@ class Config(metaclass=Singleton):
 
     def __init__(self, mode: str = "dev") -> None:
         # path to config file
-        config_file_path = path.abspath(
-            path.join("rss_reader", "config", "config.dev.yml")
-        )
+
         if mode == "prod":
             config_file_path = path.abspath(
                 path.join("rss_reader", "config", "config.prod.yml")
@@ -73,6 +71,14 @@ class Config(metaclass=Singleton):
         elif mode == "test":
             config_file_path = path.abspath(
                 path.join("rss_reader", "config", "config.test.yml")
+            )
+        elif mode == "docker":
+            config_file_path = path.abspath(
+                path.join("rss_reader", "config", "config.docker.yml")
+            )
+        else:
+            config_file_path = path.abspath(
+                path.join("rss_reader", "config", "config.dev.yml")
             )
 
         with open(config_file_path, "r") as config_file:

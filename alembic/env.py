@@ -21,13 +21,25 @@ sys.path.append(BASE_DIR)
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-DATABASE_URL = "postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}".format(
-    user="rss_reader",
-    password="rss_Reader_Dev",
-    host="localhost",
-    port="5432",
-    db="rss_reader",
-)
+
+app_mode = os.getenv("APP_MODE")
+DATABASE_URL = ""
+if app_mode != "docker":
+    DATABASE_URL = "postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}".format(
+        user="rss_reader",
+        password="rss_Reader_Dev",
+        host="localhost",
+        port="5432",
+        db="rss_reader",
+    )
+else:
+    DATABASE_URL = "postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}".format(
+        user="rss_reader",
+        password="rss_reader_dev",
+        host="database",
+        port="5432",
+        db="rss_reader",
+    )
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # Interpret the config file for Python logging.

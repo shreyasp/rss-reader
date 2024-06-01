@@ -2,14 +2,14 @@ app:
   debug: true
 
 db:
-  host: "localhost"
+  host: "database"
   name: "rss_reader"
   port: 5432
   user: "rss_reader"
-  pswd: "rss_Reader_Dev"
+  pswd: "rss_reader_dev"
 
 cache:  
-  host: "localhost"
+  host: "cache"
   port: 6379
   dbno: 0
   pswd: ""
