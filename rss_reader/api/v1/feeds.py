@@ -58,7 +58,6 @@ class UserFeedPostResponse(BaseModel):
 def create_feed(
     feed_payload: CreateFeed,
     conn: Session = Depends(get_db_connection),
-    cache: Cache = Depends(get_cache),
     mq: Queue = Depends(get_queue_conn),
 ):
     """creates multiple feeds for the user"""
@@ -134,12 +133,13 @@ def create_feed(
 def delete_feed_link(
     feed_payload: DeleteFeed,
     conn: Session = Depends(get_db_connection),
-    cache: Cache = Depends(get_cache),
 ):
     """unfollow multiple feeds for the user"""
     _check_if_user_exists(conn, feed_payload.user_id)
 
     for feed_id in feed_payload.feed_ids:
+        _check_if_feeds_exists(conn=conn, feed_id=feed_id)
+
         q = (
             select(UserFeedPostLink)
             .where(UserFeedPostLink.user_id == feed_payload.user_id)
@@ -231,11 +231,13 @@ def mark_post_as_read_or_unread(
     description="marks all posts related to a feed for the given user as read",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def mark_all_posts_as_read(
+def mark_all_posts_as_read_for_user_feed(
     feed_id: int,
     user_id: int,
     conn: Session = Depends(get_db_connection),
 ):
+    _check_if_feeds_exists(conn=conn, feed_id=feed_id)
+
     q = (
         select(UserFeedPostLink)
         .where(UserFeedPostLink.user_id == user_id)
@@ -281,16 +283,50 @@ def mark_all_posts_as_read(
 
 
 @feeds_router.get(
-    path="/{feed_id}",
+    path="/{feed_id}/",
+    description="Lists the feed and all posts from it",
+    status_code=status.HTTP_200_OK,
+)
+def get_feed_and_posts_for_feed(
+    feed_id: int,
+    conn: Session = Depends(get_db_connection),
+):
+    f = _check_if_feeds_exists(conn=conn, feed_id=feed_id)
+    q = (
+        select(PostModel, UserFeedPostLink)
+        .join(PostModel)
+        .where(UserFeedPostLink.feed_id == f.id)
+    )
+
+    try:
+        post_n_links = conn.exec(q).all()
+    except Exception as exc:
+        raise HTTPException(
+            detail=exc,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    posts: list[PostModel] = []
+    for post_n_link in post_n_links:
+        posts.append(post_n_link[0])
+
+    return {"feed": f, "posts": posts}
+
+
+@feeds_router.get(
+    path="/{feed_id}/user/{user_id}",
     description="Lists all posts from a feed for the given user",
     status_code=status.HTTP_200_OK,
 )
-def get_all_feeds_for_user(
+def get_all_feed_posts_by_feed_and_user(
     feed_id: int,
     user_id: int,
     is_read: bool = None,
     conn: Session = Depends(get_db_connection),
 ):
+
+    _check_if_feeds_exists(conn=conn, feed_id=feed_id)
+
     q = (
         select(PostModel, UserFeedPostLink)
         .join(PostModel)
@@ -327,19 +363,49 @@ def get_all_feeds_for_user(
     return {"posts": resp}
 
 
+@feeds_router.post(
+    path="/{feed_id}/force-refresh",
+    description="forces a feed refresh",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def force_refresh_feed(
+    feed_id: int,
+    conn: Session = Depends(get_db_connection),
+    mq: Queue = Depends(get_queue_conn),
+):
+    f = _check_if_feeds_exists(conn=conn, feed_id=feed_id)
+
+    mq.enqueue(
+        "rss_reader.utils.feed_parser.requeue_jobs_for_user_feed",
+        f.id,
+    )
+
+
 #### add helper functions here
-def _check_if_user_exists(conn: Session, user_id: int):
+def _check_if_user_exists(conn: Session, user_id: int) -> UserModel:
     q = select(UserModel).where(UserModel.id == user_id)
     try:
-        conn.exec(q).one()
+        u = conn.exec(q).one()
 
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="user with {uuid} not found".format(uuid=uuid),
+            detail="user with {id} not found".format(id=id),
         )
-    except MultipleResultsFound:
+
+    else:
+        return u
+
+
+def _check_if_feeds_exists(conn: Session, feed_id: int) -> FeedModel:
+    q = select(FeedModel).where(FeedModel.id == feed_id)
+    try:
+        f = conn.exec(q).one()
+    except NoResultFound:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="multiple user object exists with given {uuid}".format(uuid=uuid),
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="feed with {id} not found".format(id=feed_id),
         )
+
+    else:
+        return f
